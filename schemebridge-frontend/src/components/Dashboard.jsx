@@ -18,9 +18,13 @@ import TranslateIcon from '@mui/icons-material/Translate';
 import { motion } from "framer-motion";
 import API_BASE from "../api";
 import { useLanguage } from "./LanguageContext";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+import LogoutIcon from '@mui/icons-material/Logout';
 
 export default function Dashboard() {
   const { t, lang, toggleLanguage } = useLanguage();
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
 
   // 🛑 HARD STOP IF USER MISSING
@@ -54,6 +58,13 @@ export default function Dashboard() {
     try {
       console.log("Saving profile for user:", user.id);
 
+      Swal.fire({
+        title: 'Finding best schemes for you...',
+        text: 'Analyzing your profile matches',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+
       const saveRes = await fetch(
         `${API_BASE}/api/profile/${user.id}`,
         {
@@ -79,9 +90,20 @@ export default function Dashboard() {
       setSchemes(data);
       setSaved(true);
 
+      Swal.fire({
+        icon: 'success',
+        title: 'Schemes Found!',
+        text: `We found ${data.length} eligible schemes for you.`,
+        timer: 2000
+      });
+
     } catch (err) {
       console.error("Dashboard error:", err);
-      alert("Error while saving profile or fetching schemes");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error while saving profile or fetching schemes'
+      });
     }
   };
 
@@ -118,10 +140,36 @@ export default function Dashboard() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You will be logged out of your session.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem("user");
+        Swal.fire({
+          title: 'Logged Out!',
+          text: 'You have been logged out successfully.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        }).then(() => {
+          navigate("/");
+        });
+      }
+    });
+  };
+
   return (
     <Box p={4} maxWidth={1400} mx="auto">
       {/* Language Toggle */}
-      <Box position="absolute" top={20} right={20} zIndex={10}>
+      {/* Language Toggle and Logout */}
+      <Box position="absolute" top={20} right={20} zIndex={10} display="flex" gap={2}>
         <Button
           startIcon={<TranslateIcon />}
           onClick={toggleLanguage}
@@ -129,6 +177,14 @@ export default function Dashboard() {
           variant="outlined"
         >
           {lang === 'en' ? 'தமிழ்' : 'English'}
+        </Button>
+        <Button
+          startIcon={<LogoutIcon />}
+          onClick={handleLogout}
+          sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)', '&:hover': { bgcolor: 'rgba(255,0,0,0.1)', borderColor: 'red' } }}
+          variant="outlined"
+        >
+          Logout
         </Button>
       </Box>
 

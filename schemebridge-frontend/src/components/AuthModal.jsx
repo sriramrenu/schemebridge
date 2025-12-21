@@ -9,6 +9,7 @@ import {
   Typography
 } from "@mui/material";
 import API_BASE from "../api";
+import Swal from "sweetalert2";
 
 export default function AuthModal({ open, onClose, onLogin }) {
   const [isSignup, setIsSignup] = useState(false);
@@ -27,20 +28,52 @@ export default function AuthModal({ open, onClose, onLogin }) {
       ? form
       : { email: form.email, password: form.password };
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+    const isSignupRequest = isSignup; // Capture current state for the message title
+
+    Swal.fire({
+      title: isSignupRequest ? "Creating Account..." : "Logging in...",
+      text: "Please wait...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
     });
 
-    if (!res.ok) {
-      alert("Authentication failed");
-      return;
-    }
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-    const user = await res.json();
-    onLogin(user);
-    onClose();
+      if (!res.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Authentication Failed",
+          text: "Please check your credentials and try again."
+        });
+        return;
+      }
+
+      const user = await res.json();
+
+      Swal.fire({
+        icon: "success",
+        title: isSignupRequest ? "Account Created!" : "Welcome back!",
+        timer: 1500,
+        showConfirmButton: false
+      });
+
+      onLogin(user);
+      onClose();
+    } catch (error) {
+      console.error("Login error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Something went wrong. Please try again."
+      });
+    }
   };
 
   return (
