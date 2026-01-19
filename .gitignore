@@ -1,0 +1,41 @@
+# Maven
+**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restore
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Log files
+*.log
+**/direct_run.log
+**/h2_run*.log
+**/jdk23_run*.log
+**/startup.log
+**/build*.log
+
+# IDEs
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Frontend
+**/node_modules/
+**/dist/
+**/dist-ssr/
+*.local
+.env
+.DS_Store
+
+# Temporary files
+temp/
+tmp/

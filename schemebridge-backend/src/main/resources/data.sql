@@ -1,6 +1,10 @@
 -- Tamil Nadu Government Schemes - Demo Data
 -- Categories: Women, Students, Farmers, Disabled, Health, Housing, Employment, General
 
+-- Clean existing data to avoid PK conflicts during development
+DELETE FROM eligibility_rules;
+DELETE FROM schemes;
+
 INSERT INTO schemes (id, scheme_name, description, category, active) VALUES
 -- WOMEN WELFARE (1-20)
 (1, 'Moovalur Ramamirtham Ammaiyar Higher Education Assurance Scheme', 'Financial assistance of Rs. 1000/month for girl students from government schools pursuing higher education.', 'Women', true),
@@ -331,3 +335,7 @@ INSERT INTO eligibility_rules (scheme_id, min_age, max_income, category, locatio
 (148, 0, 99999999, 'General', 'Tamil Nadu'),
 (149, 0, 99999999, 'General', 'Tamil Nadu'),
 (150, 0, 99999999, 'General', 'Tamil Nadu');
+
+-- Sync sequences after manual ID insertion
+SELECT setval(pg_get_serial_sequence('schemes', 'id'), coalesce(max(id), 0) + 1, false) FROM schemes;
+SELECT setval(pg_get_serial_sequence('eligibility_rules', 'id'), coalesce(max(id), 0) + 1, false) FROM eligibility_rules;
