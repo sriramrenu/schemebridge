@@ -5,6 +5,6 @@ node_modules
 .env
 Dockerfile
 .dockerignore
-package-lock.json
+readme.md
 README.md
 prisma/migrations
