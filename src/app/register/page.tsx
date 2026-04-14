@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { User, Mail, Lock, ArrowRight, Loader2, MapPin, Users, Briefcase, GraduationCap, Coins } from 'lucide-react';
 import { register } from '@/app/actions/auth';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
@@ -14,10 +15,16 @@ export default function RegisterPage() {
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
+    const toastId = toast.loading('Creating your account...');
+    
     const result = await register(formData);
+    
     if (result?.error) {
       setError(result.error);
       setLoading(false);
+      toast.error(result.error, { id: toastId });
+    } else {
+      toast.success('Account created! Welcome to SchemeBridge.', { id: toastId });
     }
   }
 

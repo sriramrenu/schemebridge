@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import AccessibilityPanel from "./components/AccessibilityPanel";
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
@@ -87,6 +88,7 @@ export default async function RootLayout({
         </div>
 
         <AccessibilityPanel />
+        <Toaster position="top-center" expand={false} richColors />
       </body>
     </html>
   );

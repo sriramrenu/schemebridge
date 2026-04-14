@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { login } from '@/app/actions/auth';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -13,10 +14,16 @@ export default function LoginPage() {
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
+    const toastId = toast.loading('Logging you in...');
+    
     const result = await login(formData);
+    
     if (result?.error) {
       setError(result.error);
       setLoading(false);
+      toast.error(result.error, { id: toastId });
+    } else {
+      toast.success('Login successful! Redirecting...', { id: toastId });
     }
   }
 
