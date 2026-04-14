@@ -1,0 +1,10 @@
+node_modules
+.next
+.vscode
+.git
+.env
+Dockerfile
+.dockerignore
+package-lock.json
+README.md
+prisma/migrations
