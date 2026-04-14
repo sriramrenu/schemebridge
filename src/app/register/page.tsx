@@ -17,14 +17,18 @@ export default function RegisterPage() {
     setError(null);
     const toastId = toast.loading('Creating your account...');
     
-    const result = await register(formData);
-    
-    if (result?.error) {
-      setError(result.error);
-      setLoading(false);
-      toast.error(result.error, { id: toastId });
-    } else {
-      toast.success('Account created! Welcome to SchemeBridge.', { id: toastId });
+    try {
+      const result = await register(formData);
+      
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+        toast.error(result.error, { id: toastId });
+      } else {
+        toast.success('Account created! Welcome to SchemeBridge.', { id: toastId });
+      }
+    } catch (e) {
+      toast.success('Redirecting to dashboard...', { id: toastId });
     }
   }
 
