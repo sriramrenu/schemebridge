@@ -25,23 +25,34 @@ export default function Navbar({ session }: { session: JWTPayload | null }) {
   const toggleLanguage = () => {
     const isCurrentlyTamil = document.cookie.includes('googtrans=/en/ta');
     const nextLang = isCurrentlyTamil ? 'en' : 'ta';
-    const domain = window.location.hostname;
     
-    // Helper to clear cookie
-    const clearTransCookie = (d: string) => {
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${d};`;
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${d};`;
+    const domain = window.location.hostname;
+    const domainParts = domain.split('.');
+    const baseDomain = domainParts.length > 2 ? domainParts.slice(-2).join('.') : domain;
+
+    const setTransCookie = (val: string, d?: string) => {
+      const base = `googtrans=${val}; path=/;`;
+      document.cookie = base;
+      if (d) {
+        document.cookie = `${base} domain=${d};`;
+        document.cookie = `${base} domain=.${d};`;
+      }
     };
 
     if (nextLang === 'en') {
-      clearTransCookie(domain);
-      // Also set it to /en/en just in case
-      document.cookie = `googtrans=/en/en; path=/`;
+      // 1. Set to explicit English
+      setTransCookie('/en/en', domain);
+      setTransCookie('/en/en', baseDomain);
+      
+      // 2. Clear Google's internal state if possible
+      try {
+        localStorage.removeItem('google.translate.status');
+        sessionStorage.removeItem('google.translate.status');
+      } catch (e) {}
     } else {
-      document.cookie = `googtrans=/en/${nextLang}; path=/`;
-      document.cookie = `googtrans=/en/${nextLang}; domain=${domain}; path=/`;
-      document.cookie = `googtrans=/en/${nextLang}; domain=.${domain}; path=/`;
+      // Set to Tamil
+      setTransCookie('/en/ta', domain);
+      setTransCookie('/en/ta', baseDomain);
     }
     
     window.location.reload();
