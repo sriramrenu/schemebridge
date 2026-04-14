@@ -23,11 +23,27 @@ export default function Navbar({ session }: { session: JWTPayload | null }) {
   }, []);
 
   const toggleLanguage = () => {
-    const nextLang = lang === 'EN' ? 'ta' : 'en';
+    const isCurrentlyTamil = document.cookie.includes('googtrans=/en/ta');
+    const nextLang = isCurrentlyTamil ? 'en' : 'ta';
     const domain = window.location.hostname;
-    document.cookie = `googtrans=/en/${nextLang}; path=/`;
-    document.cookie = `googtrans=/en/${nextLang}; domain=${domain}; path=/`;
-    document.cookie = `googtrans=/en/${nextLang}; domain=.${domain}; path=/`;
+    
+    // Helper to clear cookie
+    const clearTransCookie = (d: string) => {
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${d};`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${d};`;
+    };
+
+    if (nextLang === 'en') {
+      clearTransCookie(domain);
+      // Also set it to /en/en just in case
+      document.cookie = `googtrans=/en/en; path=/`;
+    } else {
+      document.cookie = `googtrans=/en/${nextLang}; path=/`;
+      document.cookie = `googtrans=/en/${nextLang}; domain=${domain}; path=/`;
+      document.cookie = `googtrans=/en/${nextLang}; domain=.${domain}; path=/`;
+    }
+    
     window.location.reload();
   };
 
