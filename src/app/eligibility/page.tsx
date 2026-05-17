@@ -46,23 +46,39 @@ export default function EligibilityWizard() {
     return schemesData.filter(scheme => {
       const text = `${scheme.title} ${scheme.summary} ${scheme.category}`.toLowerCase();
       
-      // Gender Filter
-      if (profile.gender === 'female' && !text.includes('women') && !text.includes('female') && !text.includes('girl') && !text.includes('mother')) {
-          // If a scheme is specifically for males/others we might want to hide it, 
-          // but usually 'women' schemes are the specific ones. 
-          // For now, let's just rank or keep all.
+      // 1. Extract implicit target demographics from the text (Mirroring our DB Seeding Logic)
+      const targetGenders = [];
+      if (text.includes('women') || text.includes('girl') || text.includes('penn') || text.includes('mother') || text.includes('female') || text.includes('ammaiyar')) {
+          targetGenders.push('female');
       }
-
-      // State Filter
-      const stateMatch = profile.state === 'Central' || scheme.state === 'Central' || scheme.state === profile.state;
       
-      // Income Filter (Rough estimation)
-      const incomeNum = parseInt(profile.income) || 0;
-      if (incomeNum > 800000 && (text.includes('poor') || text.includes('bpl') || text.includes('marginal'))) {
+      const targetStudent = text.includes('education') || text.includes('scholarship') || text.includes('student') || text.includes('school') || text.includes('university');
+
+      // 2. Strict Hard Constraints 
+      
+      // Gender Constraint: If a scheme explicitly targets females, but the user is NOT female, drop it entirely.
+      if (targetGenders.length > 0 && profile.gender !== 'female') {
           return false;
       }
 
-      return stateMatch;
+      // Student Constraint: If a scheme explicitly targets students, but the user is NOT a student, drop it.
+      if (targetStudent && profile.occupation?.toLowerCase() !== 'student') {
+          return false;
+      }
+
+      // State Constraint: Must be a Central scheme or match the user's state perfectly.
+      const stateMatch = profile.state === 'Central' || scheme.state === 'Central' || scheme.state === profile.state || !scheme.state;
+      if (!stateMatch) {
+          return false;
+      }
+
+      // Income Constraint (Rough heuristic)
+      const incomeNum = parseInt(profile.income) || 0;
+      if (incomeNum > 800000 && (text.includes('poor') || text.includes('bpl') || text.includes('marginal') || text.includes('economically weaker'))) {
+          return false;
+      }
+
+      return true; // If it passes all strict constraints, it's an eligible match!
     }).slice(0, 15); // Show top 15 matches
   }, [profile, step]);
 
