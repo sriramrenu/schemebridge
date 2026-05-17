@@ -4,11 +4,7 @@ import { redirect } from "next/navigation";
 import Link from 'next/link';
 import { ArrowRight, Sparkles, User as UserIcon, MapPin, Briefcase, GraduationCap, LayoutDashboard } from 'lucide-react';
 import SchemeCard from '../components/SchemeCard';
-import rawSchemesData from '../data/schemes.json';
-
-const schemesData = rawSchemesData as Array<{
-  id: string; slug: string; title: string; category: string; ministry: string; summary: string; state?: string;
-}>;
+import { RecommendationService } from '@/lib/recommendation';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -25,35 +21,13 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Smart Matching Logic
-  const getPersonalizedSchemes = () => {
-    return schemesData.filter(scheme => {
-      // 1. State Filter (Central or match user state)
-      const stateMatch = !scheme.state || scheme.state === "Central" || scheme.state === user.state;
-      if (!stateMatch) return false;
-
-      // 2. Profile Quality Filtering (Simple heuristic for demo)
-      const content = (scheme.title + " " + scheme.summary + " " + scheme.category).toLowerCase();
-      
-      // Gender specific
-      if (user.gender === "Female" && content.includes("women") || content.includes("girl") || content.includes("penn")) return true;
-      
-      // Employment specific
-      if (user.employmentStatus === "Farmer / Agriculture" && content.includes("agriculture") || content.includes("kisan")) return true;
-      if (user.employmentStatus === "Unemployed" && content.includes("skill") || content.includes("employment")) return true;
-
-      // Student specific
-      if (user.studentStatus?.includes("Student") && content.includes("education") || content.includes("scholarship") || content.includes("student")) return true;
-
-      // Caste specific
-      if (user.casteCategory !== "General" && content.includes(user.casteCategory!.toLowerCase())) return true;
-
-      // Fallback: If it's a general scheme or matches the user's state
-      return stateMatch;
-    }).slice(0, 12); // Limit for performance/view
-  };
-
-  const recommendedSchemes = getPersonalizedSchemes();
+  // Fetch recommended schemes from the Unified Engine
+  let recommendedSchemes = [];
+  try {
+    recommendedSchemes = await RecommendationService.getTopSchemesForUser(session.id as string);
+  } catch (error) {
+    console.error("Failed to fetch personalized schemes:", error);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
@@ -69,7 +43,7 @@ export default async function DashboardPage() {
             <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
                 Welcome back, <span className="text-[#1e3a8a]">{user.name?.split(' ')[0]}</span>
             </h1>
-            <p className="text-slate-500 font-medium">We&apos;ve analyzed {schemesData.length} records to find the best matches for you.</p>
+            <p className="text-slate-500 font-medium">We&apos;ve analyzed our database to find the best matches for you.</p>
           </div>
           <Link 
             href="/search" 
@@ -113,7 +87,7 @@ export default async function DashboardPage() {
 
         {recommendedSchemes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {recommendedSchemes.map((scheme, idx) => (
+            {recommendedSchemes.map((scheme: any, idx: number) => (
               <SchemeCard key={scheme.id} scheme={scheme} index={idx} />
             ))}
           </div>
