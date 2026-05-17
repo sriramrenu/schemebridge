@@ -23,12 +23,14 @@ export default function LoginPage() {
         setError(result.error);
         setLoading(false);
         toast.error(result.error, { id: toastId });
-      } else {
+      } else if (result?.success) {
         toast.success('Login successful! Redirecting...', { id: toastId });
+        window.location.href = '/dashboard';
       }
     } catch (e) {
-      // Catch potential redirect-related errors and still show success
-      toast.success('Redirecting...', { id: toastId });
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+      toast.error('An unexpected error occurred.', { id: toastId });
     }
   }
 

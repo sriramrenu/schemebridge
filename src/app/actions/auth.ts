@@ -46,7 +46,7 @@ export async function register(formData: FormData) {
   });
 
   await setSession(user);
-  redirect("/dashboard");
+  return { success: true };
 }
 
 export async function login(formData: FormData) {
@@ -68,7 +68,7 @@ export async function login(formData: FormData) {
   }
 
   await setSession(user);
-  redirect("/dashboard");
+  return { success: true };
 }
 
 export async function logoutAction() {

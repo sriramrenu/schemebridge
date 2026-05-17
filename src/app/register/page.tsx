@@ -24,11 +24,14 @@ export default function RegisterPage() {
         setError(result.error);
         setLoading(false);
         toast.error(result.error, { id: toastId });
-      } else {
+      } else if (result?.success) {
         toast.success('Account created! Welcome to SchemeBridge.', { id: toastId });
+        window.location.href = '/dashboard';
       }
     } catch (e) {
-      toast.success('Redirecting to dashboard...', { id: toastId });
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+      toast.error('An unexpected error occurred.', { id: toastId });
     }
   }
 
